@@ -14,16 +14,7 @@ class SmithWatterman():
         self.gap_score = gap_score
         self.matrix = self.__fill_matrix()
 
-    def __init_matrix(self):
-        """
-        Initilize matrix with the size seq_1 by seq_2 with zeros
-
-        Returns:
-            ndarray: Matrix with size seq_1 by seq_2 with zeros
-        """
-        return np.zeros((len(self.seq_1), len(self.seq_2)))
-
-    def get_score(self, matrix, i, j):
+    def __get_score(self, matrix, i, j):
         """
         Check if bases are the same or not and returns the score
 
@@ -49,12 +40,18 @@ class SmithWatterman():
         return np.max(score_list)
 
     def __fill_matrix(self):
-        matrix = self.__init_matrix()
+        """
+        Initialize matrix with size of seq_1 by seq_2 and assigns scores
+
+        Returns:
+            ndarray: Matrix with alignment scores
+        """
+        matrix = np.zeros((len(self.seq_1), len(self.seq_2)))
         for i in range(matrix.shape[0] - 1):
             i += 1
             for j in range (matrix.shape[1] - 1):
                 j += 1
-                x = self.get_score(matrix, i, j)
+                x = self.__get_score(matrix, i, j)
                 matrix[i][j] = x
         return matrix
     
@@ -65,9 +62,9 @@ class SmithWatterman():
         Returns:
             list: All matrix indices with the maximum value
         """
+        
         flat_indices = np.flatnonzero(self.matrix == np.max(self.matrix))
     
-        # Convert the flattened indices to 2D indices (row, column)
         shape = self.matrix.shape
         positions = [(index // shape[1], index % shape[1]) for index in flat_indices]
     
