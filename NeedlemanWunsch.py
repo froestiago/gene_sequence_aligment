@@ -1,6 +1,6 @@
 import numpy as np
 
-class SmithWatterman():
+class NeedlemanWunsch():
     def __init__(self,
                  seq_1:str,
                  seq_2:str,
@@ -29,13 +29,11 @@ class SmithWatterman():
         if(self.seq_1[i] == self.seq_2[j]):
             score_list = [matrix[i-1][j-1] + self.match_score,
                           matrix[i][j-1] + self.gap_score,
-                          matrix[i-1][j] + self.gap_score,
-                          0]
+                          matrix[i-1][j] + self.gap_score]
         else:
             score_list = [matrix[i-1][j-1] + self.mismatch_score,
                           matrix[i][j-1] + self.gap_score,
-                          matrix[i-1][j] + self.gap_score,
-                          0]
+                          matrix[i-1][j] + self.gap_score]
 
         return np.max(score_list)
 
@@ -47,6 +45,9 @@ class SmithWatterman():
             ndarray: Matrix with alignment scores
         """
         matrix = np.zeros((len(self.seq_1), len(self.seq_2)))
+        for _ in range(matrix.shape[0]): matrix[_][0] = -2*_
+        for _ in range(matrix.shape[1]): matrix[0][_] = -2*_
+
         for i in range(matrix.shape[0] - 1):
             i += 1
             for j in range (matrix.shape[1] - 1):
@@ -71,46 +72,53 @@ class SmithWatterman():
     
     # # # # # AQUI # # # # # 
     # assign char (*, | or _) based on moviment
-    def __get_local_align(self, coord: tuple[int, int]):
-        sequence = ""
-        current_value, next_value, max_value = None, None, 0
+    def __get_global_align(self, coord: tuple[int, int]):
+        sequence = []
         x, y = coord[0], coord[1]
         def __get_char(max_value):
             print(self.seq_1[x], ' - ', self.seq_2[y])
             if (max_value == 0 and self.seq_1[x] == self.seq_2[y]): # match
-                return "*"
+                return "match"
             elif (max_value == 0 and self.seq_1[x] != self.seq_2[y]): # mismatch
-                return "|"
-            elif (max_value == 1 or max_value == 2): # gap
-                return "_"
+                return "mismatch"
+            elif (max_value == 1):
+                return "gap_h"
+            elif (max_value == 2):
+                return "gap_v"
 
         while(self.matrix[x][y]):
-            if(self.matrix[x - 1][y - 1] == 0):
-                sequence += __get_char(0)
-                return sequence[::-1]
-            else:
-                indices_to_check = [index for index in [(x - 1, y - 1), (x, y - 1), (x - 1, y)] if index is not None]
-                values_to_check = [self.matrix[index] for index in indices_to_check]
-                max_value = np.argmax(values_to_check)
-                max_position = indices_to_check[max_value]
-                sequence += __get_char(max_value)
-                x, y = max_position
+            indices_to_check = [index for index in [(x - 1, y - 1), (x, y - 1), (x - 1, y)] if index is not None]
+            values_to_check = [self.matrix[index] for index in indices_to_check]
+            max_value = np.argmax(values_to_check)
+            max_position = indices_to_check[max_value]
+            sequence.append(__get_char(max_value))
+            x, y = max_position
         return sequence[::-1]
 
     def get_align(self):
-        aligns = []
+        alignment = ''
         max_position = self.__find_max_positions()
-        for coord in max_position:
-            aligns.append(self.__get_local_align(coord))
+        sequence = self.__get_global_align(max_position[-1])
+        for _ in range(len(sequence)):
+            if sequence[_] == 'match':
+                alignment += '*'
+            elif sequence[_] == 'mismatch':
+                alignment += '|'
+            elif sequence[_] == 'gap_v':
+                alignment += ' '
+                self.seq_2 = self.seq_2[:_] + '_' + self.seq_2[_:]
+            elif sequence[_] == 'gap_h':
+                alignment += ' '
+                self.seq_1 = self.seq_1[:_] + '_' + self.seq_1[_:]
 
-        return aligns
+        print(f"{self.seq_1[1:]}\n{alignment}\n{self.seq_2[1:]}")
+        return alignment
 
 
 
-instance = SmithWatterman(seq_1= 'AATCG',   # 'AATCG' - 'GGTTGACTA'
+instance = NeedlemanWunsch(seq_1= 'AATCG',   # 'AATCG' - 'GGTTGACTA'
                           seq_2= 'AACG')    # 'AACG' - 'TGTTACGG'
 
 print(instance.matrix)
 sequences = instance.get_align()
-for alignment in sequences:
-    print(f"{instance.seq_1[:len(alignment)+1]}\n {alignment}\n{instance.seq_2[:len(alignment)+1]}")
+# print(sequences)
