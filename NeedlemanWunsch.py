@@ -99,19 +99,28 @@ class NeedlemanWunsch():
         alignment = ''
         max_position = self.__find_max_positions()
         sequence = self.__get_global_align(max_position[-1])
+        
+
+        # add gaps
         for _ in range(len(sequence)):
-            if sequence[_] == 'match':
-                alignment += '*'
-            elif sequence[_] == 'mismatch':
-                alignment += '|'
-            elif sequence[_] == 'gap_v':
-                alignment += ' '
+            if sequence[_] == 'gap_v':
                 self.seq_2 = self.seq_2[:_] + '_' + self.seq_2[_:]
-            elif sequence[_] == 'gap_h':
-                alignment += ' '
+            if sequence[_] == 'gap_h':
                 self.seq_1 = self.seq_1[:_] + '_' + self.seq_1[_:]
 
-        print(f"{self.seq_1[1:]}\n{alignment}\n{self.seq_2[1:]}")
+        self.seq_1 = self.seq_1.replace(" ", "")
+        self.seq_2 = self.seq_2.replace(" ", "")
+
+        # add matches and mismatches
+        for _ in range(len(sequence)):
+            if self.seq_1[_] == self.seq_2[_]:
+                alignment += "*"
+            elif  (self.seq_1[_] != '_' or self.seq_2[_] != '_'):
+                alignment += " "
+            elif self.seq_1[_] != self.seq_2[_] and (self.seq_1[_] != '_' or self.seq_2[_] != '_'):
+                alignment += "|"
+
+        print(f"{self.seq_1}\n{alignment}\n{self.seq_2}")
         return alignment
 
 
