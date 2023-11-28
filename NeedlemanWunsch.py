@@ -56,27 +56,12 @@ class NeedlemanWunsch():
                 matrix[i][j] = x
         return matrix
     
-    def __find_max_positions(self):
-        """
-        Find the indices of all occurrences of the maximum value
-
-        Returns:
-            list: All matrix indices with the maximum value
-        """
-        
-        flat_indices = np.flatnonzero(self.matrix == np.max(self.matrix))
-    
-        shape = self.matrix.shape
-        positions = [(index // shape[1], index % shape[1]) for index in flat_indices]
-        return positions
-    
     # # # # # AQUI # # # # # 
     # assign char (*, | or _) based on moviment
     def __get_global_align(self, coord: tuple[int, int]):
         sequence = []
         x, y = coord[0], coord[1]
         def __get_char(max_value):
-            print(self.seq_1[x], ' - ', self.seq_2[y])
             if (max_value == 0 and self.seq_1[x] == self.seq_2[y]): # match
                 return "match"
             elif (max_value == 0 and self.seq_1[x] != self.seq_2[y]): # mismatch
@@ -86,7 +71,7 @@ class NeedlemanWunsch():
             elif (max_value == 2):
                 return "gap_v"
 
-        while(self.matrix[x][y]):
+        while(x > 0 and y > 0):
             indices_to_check = [index for index in [(x - 1, y - 1), (x, y - 1), (x - 1, y)] if index is not None]
             values_to_check = [self.matrix[index] for index in indices_to_check]
             max_value = np.argmax(values_to_check)
@@ -97,9 +82,9 @@ class NeedlemanWunsch():
 
     def get_align(self):
         alignment = ''
-        max_position = self.__find_max_positions()
-        sequence = self.__get_global_align(max_position[-1])
-        
+        max_position = (self.matrix.shape[0] - 1, self.matrix.shape[1] - 1)
+        # print(max_position)
+        sequence = self.__get_global_align(max_position)
 
         # add gaps
         for _ in range(len(sequence)):
@@ -110,24 +95,24 @@ class NeedlemanWunsch():
 
         self.seq_1 = self.seq_1.replace(" ", "")
         self.seq_2 = self.seq_2.replace(" ", "")
-
-        # add matches and mismatches
+        # print(sequence)
         for _ in range(len(sequence)):
             if self.seq_1[_] == self.seq_2[_]:
-                alignment += "*"
-            elif  (self.seq_1[_] != '_' or self.seq_2[_] != '_'):
-                alignment += " "
-            elif self.seq_1[_] != self.seq_2[_] and (self.seq_1[_] != '_' or self.seq_2[_] != '_'):
-                alignment += "|"
+                alignment += '*'
+            elif (self.seq_1[_] != self.seq_2[_]) and ((self.seq_1[_] != "_") and (self.seq_2[_] != "_")):
+                alignment += '|'
+            else:
+                alignment += ' '
 
         print(f"{self.seq_1}\n{alignment}\n{self.seq_2}")
+        # print(f"{alignment}")
         return alignment
 
 
 
-instance = NeedlemanWunsch(seq_1= 'AATCG',   # 'AATCG' - 'GGTTGACTA'
-                          seq_2= 'AACG')    # 'AACG' - 'TGTTACGG'
+instance = NeedlemanWunsch(seq_1= 'MTENSTSAPAAKPKRAKASKKSTDHPKYSDMIVAAIQAEKNRAGSSRQSIQKYIKSHYKVGENADSQIKLSIKRLVTTGVLKQTKGVGASGSFRLAKSDEPKKSVAFKKTKKEIKKVATPKKASKPKKAASKAPTKKPKATPVKKAKKKLAATPKKAKKPKTVKAKPVKASKPKKAKPVKPKAKSSAKRAGKKK',   # 'AATCG' - 'GGTTGACTA'
+                          seq_2= 'MTENSTSTPAAKPKRAKASKKSTDHPKYSDMIVAAIQAEKNRAGSSRQSIQKYIKSHYKVGENADSQIKLSIKRLVTTGVLKQTKGVGASGSFRLAKSDEPKRSVAFKKTKKEVKKVATPKKAAKPKKAASKAPSKKPKATPVKKAKKKPAATPKKTKKPKTVKAKPVKASKPKKTKPVKPKAKSSAKRTGKKK',)    # 'AACG' - 'TGTTACGG'
 
-print(instance.matrix)
+# print(instance.matrix)
 sequences = instance.get_align()
 # print(sequences)
