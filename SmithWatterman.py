@@ -72,45 +72,73 @@ class SmithWatterman():
     # # # # # AQUI # # # # # 
     # assign char (*, | or _) based on moviment
     def __get_local_align(self, coord: tuple[int, int]):
-        sequence = ""
-        current_value, next_value, max_value = None, None, 0
+        sequence = []
         x, y = coord[0], coord[1]
         def __get_char(max_value):
-            print(self.seq_1[x], ' - ', self.seq_2[y])
             if (max_value == 0 and self.seq_1[x] == self.seq_2[y]): # match
-                return "*"
+                return "match"
             elif (max_value == 0 and self.seq_1[x] != self.seq_2[y]): # mismatch
-                return "|"
-            elif (max_value == 1 or max_value == 2): # gap
-                return "_"
+                return "mismatch"
+            elif (max_value == 1):
+                return "gap_h"
+            elif (max_value == 2):
+                return "gap_v"
 
-        while(self.matrix[x][y]):
+        while(x > 0 and y > 0):
+            indices_to_check = [index for index in [(x - 1, y - 1), (x, y - 1), (x - 1, y)] if index is not None]
+            values_to_check = [self.matrix[index] for index in indices_to_check]
+            max_value = np.argmax(values_to_check)
+            max_position = indices_to_check[max_value]
+            # print(f"max_posistion: {max_position} - {self.matrix[x - 1][y - 1]}")
             if(self.matrix[x - 1][y - 1] == 0):
-                sequence += __get_char(0)
-                return sequence[::-1]
+                sequence.append(__get_char(0))
+                break
             else:
-                indices_to_check = [index for index in [(x - 1, y - 1), (x, y - 1), (x - 1, y)] if index is not None]
-                values_to_check = [self.matrix[index] for index in indices_to_check]
-                max_value = np.argmax(values_to_check)
-                max_position = indices_to_check[max_value]
-                sequence += __get_char(max_value)
+                sequence.append(__get_char(max_value))
                 x, y = max_position
         return sequence[::-1]
 
     def get_align(self):
         aligns = []
         max_position = self.__find_max_positions()
-        for coord in max_position:
-            aligns.append(self.__get_local_align(coord))
+        for count, coord in enumerate(max_position):
+            seq_1 = self.seq_1
+            seq_2 = self.seq_2
+            alignment = ""
+            sequence = self.__get_local_align(coord)
+            # print(sequence)
+            deslocamento = min(coord)
+            # print(coord)
+                    # add gaps
+            for i, action in enumerate(sequence):
+                if sequence[i] == 'gap_v':
+                    self.seq_2 = self.seq_2[:i + deslocamento] + '_' + self.seq_2[i + deslocamento:]
+                if sequence[i] == 'gap_h':
+                    self.seq_1 = self.seq_1[:i + deslocamento] + '_' + self.seq_1[i + deslocamento:]
+
+            seq_1 = seq_1.replace(" ", "")
+            seq_2 = seq_2.replace(" ", "")
+            # print(sequence)
+            for _ in range(len(sequence)):
+                if seq_1[_] == seq_2[_]:
+                    alignment += '*'
+                elif (seq_1[_] != seq_2[_]) and ((seq_1[_] != "_") and (seq_2[_] != "_")):
+                    alignment += '|'
+                else:
+                    alignment += ' '
+
+            print(f"{seq_1}\n{alignment}\n{seq_2}")
+            file_name = 'lero' + str(count) + '.txt'
+            # with open(file_name, 'w') as f: f.write(f"{seq_1}\n{alignment}\n{seq_2}")
+            x, y = self.matrix.shape
+            with open(file_name, 'w') as f: f.write(f"{self.seq_1}\n{alignment}\n{self.seq_2}\nscore: {self.matrix[x-1][y-1]}")
 
         return aligns
 
 
 
-instance = SmithWatterman(seq_1= 'AATCG',   # 'AATCG' - 'GGTTGACTA'
-                          seq_2= 'AACG')    # 'AACG' - 'TGTTACGG'
+instance = SmithWatterman(seq_1= 'MTENSTSAPAAKPKRAKASKKSTDHPKYSDMIVAAIQAEKNRAGSSRQSIQKYIKSHYKVGENADSQIKLSIKRLVTTGVLKQTKGVGASGSFRLAKSDEPKKSVAFKKTKKEIKKVATPKKASKPKKAASKAPTKKPKATPVKKAKKKLAATPKKAKKPKTVKAKPVKASKPKKAKPVKPKAKSSAKRAGKKK',   # 'AATCG' - 'GGTTGACTA'
+                          seq_2= 'MTENSTSTPAAKPKRAKASKKSTDHPKYSDMIVAAIQAEKNRAGSSRQSIQKYIKSHYKVGENADSQIKLSIKRLVTTGVLKQTKGVGASGSFRLAKSDEPKRSVAFKKTKKEVKKVATPKKAAKPKKAASKAPSKKPKATPVKKAKKKPAATPKKTKKPKTVKAKPVKASKPKKTKPVKPKAKSSAKRTGKKK')    # 'AACG' - 'TGTTACGG'
 
 print(instance.matrix)
 sequences = instance.get_align()
-for alignment in sequences:
-    print(f"{instance.seq_1[:len(alignment)+1]}\n {alignment}\n{instance.seq_2[:len(alignment)+1]}")

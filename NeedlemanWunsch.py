@@ -44,6 +44,7 @@ class NeedlemanWunsch():
         Returns:
             ndarray: Matrix with alignment scores
         """
+        
         matrix = np.zeros((len(self.seq_1), len(self.seq_2)))
         for _ in range(matrix.shape[0]): matrix[_][0] = -2*_
         for _ in range(matrix.shape[1]): matrix[0][_] = -2*_
@@ -61,7 +62,7 @@ class NeedlemanWunsch():
     def __get_global_align(self, coord: tuple[int, int]):
         sequence = []
         x, y = coord[0], coord[1]
-        def __get_char(max_value):
+        def __get_action(max_value):
             if (max_value == 0 and self.seq_1[x] == self.seq_2[y]): # match
                 return "match"
             elif (max_value == 0 and self.seq_1[x] != self.seq_2[y]): # mismatch
@@ -76,15 +77,16 @@ class NeedlemanWunsch():
             values_to_check = [self.matrix[index] for index in indices_to_check]
             max_value = np.argmax(values_to_check)
             max_position = indices_to_check[max_value]
-            sequence.append(__get_char(max_value))
+            # print(f"max_posistion: {max_position}")
+            sequence.append(__get_action(max_value))
             x, y = max_position
         return sequence[::-1]
 
     def get_align(self):
         alignment = ''
-        max_position = (self.matrix.shape[0] - 1, self.matrix.shape[1] - 1)
-        # print(max_position)
-        sequence = self.__get_global_align(max_position)
+        start_position = (self.matrix.shape[0] - 1, self.matrix.shape[1] - 1)
+        # print(start_position)
+        sequence = self.__get_global_align(start_position)
 
         # add gaps
         for _ in range(len(sequence)):
@@ -105,14 +107,19 @@ class NeedlemanWunsch():
                 alignment += ' '
 
         print(f"{self.seq_1}\n{alignment}\n{self.seq_2}")
-        # print(f"{alignment}")
+        file_name = 'Q1.txt'
+        x, y = self.matrix.shape
+        with open(file_name, 'w') as f: f.write(f"\n{self.seq_1}\n{alignment}\n{self.seq_2}\nscore: {self.matrix[x-1][y-1]}")
         return alignment
 
 
 
-instance = NeedlemanWunsch(seq_1= 'MTENSTSAPAAKPKRAKASKKSTDHPKYSDMIVAAIQAEKNRAGSSRQSIQKYIKSHYKVGENADSQIKLSIKRLVTTGVLKQTKGVGASGSFRLAKSDEPKKSVAFKKTKKEIKKVATPKKASKPKKAASKAPTKKPKATPVKKAKKKLAATPKKAKKPKTVKAKPVKASKPKKAKPVKPKAKSSAKRAGKKK',   # 'AATCG' - 'GGTTGACTA'
-                          seq_2= 'MTENSTSTPAAKPKRAKASKKSTDHPKYSDMIVAAIQAEKNRAGSSRQSIQKYIKSHYKVGENADSQIKLSIKRLVTTGVLKQTKGVGASGSFRLAKSDEPKRSVAFKKTKKEVKKVATPKKAAKPKKAASKAPSKKPKATPVKKAKKKPAATPKKTKKPKTVKAKPVKASKPKKTKPVKPKAKSSAKRTGKKK',)    # 'AACG' - 'TGTTACGG'
+instance = NeedlemanWunsch(match_score= 7,
+                           mismatch_score= -3,
+                           gap_score= -4,
+                           seq_1= 'ATCGT',   # 'AATCG' - 'GGTTGACTA'
+                           seq_2= 'ACA')    # 'AACG' - 'TGTTACGG'
 
-# print(instance.matrix)
+print(instance.matrix)
 sequences = instance.get_align()
 # print(sequences)
