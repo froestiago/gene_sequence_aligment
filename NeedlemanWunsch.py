@@ -12,7 +12,8 @@ class NeedlemanWunsch():
         self.match_score = match_score
         self.mismatch_score = mismatch_score
         self.gap_score = gap_score
-        self.matrix = self.__fill_matrix()
+        self.matrix = self.__fill_matrix_highscore()
+        self.score = self.matrix[0][-1]
 
     def __get_score(self, matrix, i, j):
         """
@@ -57,8 +58,43 @@ class NeedlemanWunsch():
                 matrix[i][j] = x
         return matrix
     
-    # # # # # AQUI # # # # # 
-    # assign char (*, | or _) based on moviment
+    def __fill_matrix_highscore(self):
+        """
+        Initialize matrix with size of seq_1 by seq_2 and assigns scores
+
+        Returns:
+            ndarray: Matrix with alignment scores
+        """
+        
+        line = np.zeros((2, len(self.seq_2)))
+
+        for _ in range(len(self.seq_2)): line[0][_] = -2*_
+
+        # print(f'line - \n{line}')
+        # print(f'len(seq_1) - {len(self.seq_1)}')
+
+        for i in range(len(self.seq_1) - 1):
+            i += 1
+            print(f'{i}/{len(self.seq_1)}')
+            line[1][0] = -2*i
+            for j in range(len(line[1]) - 1):
+                j += 1
+                if(self.seq_1[i] == self.seq_2[j]):
+                    line[1][j] = np.max([line[0][j-1] + self.match_score,
+                                         line[0][j] + self.gap_score,
+                                         line[1][j-1] + self.gap_score])
+                else:
+                    line[1][j] = np.max([line[0][j-1] + self.mismatch_score,
+                                         line[0][j] + self.gap_score,
+                                         line[1][j-1] + self.gap_score])
+            # print('\n',line)
+            
+            line[0][:] = line[1][:]
+            line[1][:] = np.zeros(len(line[0]))
+
+        return line
+                
+    
     def __get_global_align(self, coord: tuple[int, int]):
         sequence = []
         x, y = coord[0], coord[1]
@@ -111,15 +147,24 @@ class NeedlemanWunsch():
         x, y = self.matrix.shape
         with open(file_name, 'w') as f: f.write(f"\n{self.seq_1}\n{alignment}\n{self.seq_2}\nscore: {self.matrix[x-1][y-1]}")
         return alignment
+    
+    def get_score(self):
+        return [(self.matrix.shape[0] - 1, self.matrix.shape[1] - 1), self.matrix[-1][-1]]
 
+def read_fasta(file_path):
+    with open(file_path, 'r') as file:
+        first_line = file.readline().strip()
+        remaining_text = file.read().replace('\n', '')
+    return first_line, remaining_text
 
+seq_1 = read_fasta('../dataset_1/seq_4.fasta')
+seq_2 = read_fasta('../dataset_1/seq_7.fasta')
 
-instance = NeedlemanWunsch(match_score= 7,
-                           mismatch_score= -3,
-                           gap_score= -4,
-                           seq_1= 'ATCGT',   # 'AATCG' - 'GGTTGACTA'
-                           seq_2= 'ACA')    # 'AACG' - 'TGTTACGG'
+instance = NeedlemanWunsch(seq_1= seq_1[1],   # 'AATCG' - 'GGTTGACTA'
+                           seq_2= seq_2[1])    # 'AACG' - 'TGTTACGG'
 
 print(instance.matrix)
-sequences = instance.get_align()
-# print(sequences)
+print(instance.score)
+# sequences = instance.get_align()
+# print(instance.get_score())
+# instance.fill_matrix_highscore()
