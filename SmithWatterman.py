@@ -7,6 +7,7 @@ class SmithWatterman():
                  match_score:int = 1,
                  mismatch_score:int = -1,
                  gap_score:int = -2):
+        
         self.seq_1 = " " + seq_1
         self.seq_2 = " " + seq_2
         self.match_score = match_score
@@ -68,9 +69,7 @@ class SmithWatterman():
         shape = self.matrix.shape
         positions = [(index // shape[1], index % shape[1]) for index in flat_indices]
         return positions
-    
-    # # # # # AQUI # # # # # 
-    # assign char (*, | or _) based on moviment
+
     def __get_local_align(self, coord: tuple[int, int]):
         sequence = []
         x, y = coord[0], coord[1]
@@ -137,8 +136,8 @@ class SmithWatterman():
 
 
 
-instance = SmithWatterman(seq_1= 'MTENSTSAPAAKPKRAKASKKSTDHPKYSDMIVAAIQAEKNRAGSSRQSIQKYIKSHYKVGENADSQIKLSIKRLVTTGVLKQTKGVGASGSFRLAKSDEPKKSVAFKKTKKEIKKVATPKKASKPKKAASKAPTKKPKATPVKKAKKKLAATPKKAKKPKTVKAKPVKASKPKKAKPVKPKAKSSAKRAGKKK',   # 'AATCG' - 'GGTTGACTA'
-                          seq_2= 'MTENSTSTPAAKPKRAKASKKSTDHPKYSDMIVAAIQAEKNRAGSSRQSIQKYIKSHYKVGENADSQIKLSIKRLVTTGVLKQTKGVGASGSFRLAKSDEPKRSVAFKKTKKEVKKVATPKKAAKPKKAASKAPSKKPKATPVKKAKKKPAATPKKTKKPKTVKAKPVKASKPKKTKPVKPKAKSSAKRTGKKK')    # 'AACG' - 'TGTTACGG'
+instance = SmithWatterman(seq_1= 'GGTTGACTA',   # 'AATCG' - 'GGTTGACTA'
+                          seq_2= 'TGTTACGG')    # 'AACG' - 'TGTTACGG'
 
 print(instance.matrix)
 sequences = instance.get_align()
