@@ -157,8 +157,8 @@ def read_fasta(file_path):
         remaining_text = file.read().replace('\n', '')
     return first_line, remaining_text
 
-seq_1 = read_fasta('dataset_2/seq_4.fasta')
-seq_2 = read_fasta('dataset_2/seq_7.fasta')
+seq_1 = read_fasta('../dataset_2/seq_4.fasta')
+seq_2 = read_fasta('../dataset_2/seq_7.fasta')
 
 instance = NeedlemanWunsch(seq_1= seq_1[1],   # 'AATCG' - 'GGTTGACTA'
                            seq_2= seq_2[1])    # 'AACG' - 'TGTTACGG'
