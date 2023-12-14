@@ -75,9 +75,9 @@ class NeedlemanWunsch():
 
         for i in range(len(self.seq_1) - 1):
             i += 1
-            # print(f'{i}/{len(self.seq_1)}')
+            print(f'{i}/{len(self.seq_1)}')
             line[1][0] = -2*i
-            for j in range(len(line[1]) - 1): # while valor atual é o menor
+            for j in range(len(line[1]) - 1):
                 j += 1
                 if(self.seq_1[i] == self.seq_2[j]):
                     line[1][j] = np.max([line[0][j-1] + self.match_score,
@@ -157,16 +157,14 @@ def read_fasta(file_path):
         remaining_text = file.read().replace('\n', '')
     return first_line, remaining_text
 
-seq_1 = read_fasta('../dataset_2/seq_1.fasta')
-seq_2 = read_fasta('../dataset_2/seq_2.fasta')
+seq_1 = read_fasta('../dataset_1/seq_1.fasta')
+seq_2 = read_fasta('../dataset_1/seq_2.fasta')
 
-score_matrix = np.zeros((10, 10))
+instance = NeedlemanWunsch(seq_1= seq_1[1],   # 'AATCG' - 'GGTTGACTA'
+                           seq_2= seq_2[1])    # 'AACG' - 'TGTTACGG'
 
-for i in range(1,11):
-    for j in range(i+1,11):
-        instance = NeedlemanWunsch(seq_1= read_fasta(f'../dataset_2/seq_{i}.fasta')[1],   # 'AATCG' - 'GGTTGACTA'
-                                   seq_2= read_fasta(f'../dataset_2/seq_{j}.fasta')[1])    # 'AACG' - 'TGTTACGG'
-        print(f'\t{i},{j}: {instance.score}')
-        score_matrix[i-1][j-1] = instance.score
-        score_matrix[j-1][i-1] = instance.score
-print(score_matrix)
+print(instance.matrix)
+print(instance.score)
+# sequences = instance.get_align()
+# print(instance.get_score())
+# instance.fill_matrix_highscore()
