@@ -9,14 +9,13 @@ def get_key(my_dict, val):
     return "key doesn't exist"
 
 def neighbor_joining(D, taxa):
-    
     taxa_dict = dict()
     for _ in range(len(taxa)):
         taxa_dict[taxa[_]] = _
 
     if len(taxa) == 2:
-        tree = {'name': taxa[0], 'children': [{'name': taxa[1], 'distance': D[0, 1]}]}
-        return tree
+        tree = f'({taxa[0]}, {taxa[1]})'
+        return (tree)
 
     n = len(taxa)
     Q = np.zeros((n, n))
@@ -32,6 +31,7 @@ def neighbor_joining(D, taxa):
 
     i, j = min_Q_ij
     print(f'pair: {taxa[i]}, {taxa[j]}')
+    # tree_2 = tree_2 + f'({taxa[i]}, {taxa[j]})'
     print(i, j)
     delta = (np.sum(D[i, :]) - np.sum(D[:, j])) / (n - 2)
     node_to_i = 0.5 * (D[i, j] + delta)
@@ -60,7 +60,8 @@ def neighbor_joining(D, taxa):
     taxa_dict.pop(j)
     new_taxa = list()
     for key, value in taxa_dict.items(): new_taxa.append(key)
-    new_taxa.append(str(i+j))
+    # new_taxa.append(str(i+j))
+    new_taxa.append(f'({i}, {j})')
 
 
     return neighbor_joining(new_D, new_taxa)
@@ -90,12 +91,12 @@ D = np.array([[0, 4, 5, 10],
 #               [8, 9, 7, 3, 0]])
 
 # exemplo https://www.youtube.com/watch?v=7tn90VWGmV4
-# taxa = ['A', 'B', 'C', 'D', 'E']
-# D = np.array([[0, 17, 21, 31, 23],
-#               [17, 0, 30, 34, 21],
-#               [21, 30, 0, 28, 39],
-#               [31, 34, 28, 0, 43],
-#               [23, 21, 39, 43, 0]])
+taxa = ['A', 'B', 'C', 'D', 'E']
+D = np.array([[0, 17, 21, 31, 23],
+              [17, 0, 30, 34, 21],
+              [21, 30, 0, 28, 39],
+              [31, 34, 28, 0, 43],
+              [23, 21, 39, 43, 0]])
 
 print(f'D:\n{D}\n\n')
 phylogenetic_tree = neighbor_joining(D, taxa)
